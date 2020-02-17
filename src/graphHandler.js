@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import './graph';
+import axios from 'axios';
+import qs from 'qs';
 
 const parseTicketName = name => {
   const matches = name.match(
@@ -24,15 +26,51 @@ window.graphHandler = new Vue({
   data: {
     currentParent: '',
     currentChild: '',
+    currentAssignee: '',
     newTicketId: '',
     newTicketName: '',
     dataAsJson: '',
+    ip: '',
+    chatId: '',
   },
 
   methods: {
+    addDependencyOrAssignee(child, parent, assignee) {
+      if (!child) {
+        return;
+      }
+      if (parent) {
+        this.addDependency(parent, child);
+      }
+      if (assignee) {
+        this.addAssignee(child, assignee);
+      }
+      this.currentAssignee = null;
+      this.currentChild = null;
+      this.currentParent = null;
+    },
+
+    addAssignee(ticketId, assignee) {
+      this.addGraphAssignee(ticketId, assignee);
+      window.trelloHandler.deleteAllLabels(ticketId);
+      window.trelloHandler.addTrelloLabel(ticketId, assignee);
+    },
+
     addDependency(parent, child) {
       this.addGraphDependency(parent, child);
       window.trelloHandler.addTrelloDependency(parent, child);
+    },
+
+    addGraphAssignee(ticketId, assignee) {
+      const currentNode = window.myDiagram.model.findNodeDataForKey(ticketId);
+      const ticketLabels = [{ name: assignee }];
+      window.myDiagram.startTransaction('Add assignee');
+      window.myDiagram.model.setDataProperty(
+        currentNode,
+        'labels',
+        ticketLabels
+      );
+      window.myDiagram.commitTransaction('Add assignee');
     },
 
     addGraphDependency(parent, child) {
@@ -42,9 +80,6 @@ window.graphHandler = new Vue({
         to: child,
       });
       window.myDiagram.commitTransaction('Add dependency');
-
-      this.currentChild = null;
-      this.currentParent = null;
     },
 
     addOrUpdateTicket({ ticketId, ticketName, ticketLabels }) {
@@ -118,5 +153,43 @@ window.graphHandler = new Vue({
     loadData() {
       window.myDiagram.model = window.go.Model.fromJson(this.dataAsJson);
     },
+
+    sendToIp() {
+      const dataAsJson = window.myDiagram.model.toJson();
+      const vm = this;
+      axios({
+        method: 'post',
+        url: `http://${vm.ip}:5035/submit`,
+        data: qs.stringify({
+          chatId: vm.chatId,
+          jsonData: dataAsJson,
+        }),
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+      });
+    },
+  },
+
+  created() {
+    const uri = window.location.href.split('?');
+    if (uri.length === 2) {
+      const vars = uri[1].split('&');
+      const getVars = {};
+      let tmp = '';
+      vars.forEach(v => {
+        tmp = v.split('=');
+        if (tmp.length === 2) {
+          const [key, val] = tmp;
+          getVars[key] = val;
+        }
+      });
+      if (getVars.ip !== undefined) {
+        this.ip = getVars.ip;
+      }
+      if (getVars.chatId !== undefined) {
+        this.chatId = getVars.chatId;
+      }
+    }
   },
 });

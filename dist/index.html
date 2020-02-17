@@ -85,25 +85,32 @@
       </div>
       <div id="dependencyGraph"></div>
       <div class="row" id="graphHandler">
-        <form v-on:submit.prevent="addDependency(currentParent, currentChild)">
+        <form v-on:submit.prevent="addDependencyOrAssignee(currentChild, currentParent, currentAssignee)">
           <div class="row">
-            <div class="input-field col s6">
+            <div class="input-field col s4">
               <label for="child">The ticket id</label>
               <input id="child" type="number" v-model.number="currentChild" />
             </div>
-            <div class="input-field col s6">
+            <div class="input-field col s4">
               <label for="parent">depends on the ticket</label>
               <input id="parent" type="number" v-model.number="currentParent" />
             </div>
+            <div class="input-field col s4">
+              <label for="assignee">should be assigned to</label>
+              <input id="assignee" type="text" v-model.number="currentAssignee" />
+            </div>
           </div>
           <button
-            class="right btn waves-effect waves-light center-align"
+            class="right btn waves-effect waves-light center-align hmargin"
             type="submit"
           >
-            Add dependency
+            Add dependency/Assign worker
           </button>
-          <button class="btn left" type="button" v-on:click="saveData">
+          <button class="btn left hmargin" type="button" v-on:click="saveData">
             Export to JSON
+          </button>
+          <button v-if="(ip!='') && (chatId!='')" class="btn left hmargin" type="button" v-on:click="sendToIp">
+            Send to d-Uhura
           </button>
         </form>
         <div class="col s12" v-if="dataAsJson!=''">

@@ -27,8 +27,10 @@
     "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "gojs": "^2.1.6",
     "jquery": "^3.4.1",
+    "qs": "^6.9.1",
     "vue": "^2.6.11",
     "vue-gtag": "^1.2.0"
   }

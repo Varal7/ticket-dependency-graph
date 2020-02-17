@@ -196,6 +196,36 @@ window.trelloHandler = new Vue({
       return false;
     },
 
+    deleteAllLabels(cardId) {
+      if (this.cards == null) {
+        console.warn('Fail adding dependency in Trello'); // eslint-disable-line no-console
+        return false;
+      }
+      const card = this.cards.find(el => el.idShort === cardId);
+      return new Promise(resolve => {
+        window.Trello.get(`/cards/${card.id}`).then(cardData => {
+          Promise.all(
+            cardData.idLabels.map(idLabel =>
+              window.Trello.delete(`/labels/${idLabel}`)
+            )
+          ).then(values => resolve(values));
+        });
+      });
+    },
+
+    addTrelloLabel(cardId, label) {
+      if (this.cards == null) {
+        console.warn('Fail adding dependency in Trello'); // eslint-disable-line no-console
+        return false;
+      }
+      const card = this.cards.find(el => el.idShort === cardId);
+      const labelItem = {
+        name: label,
+        color: null,
+      };
+      window.Trello.post(`/cards/${card.id}/labels`, labelItem);
+    },
+
     addTrelloDependency(parentId, childId) {
       let childCard = null;
       let parentCard = null;
