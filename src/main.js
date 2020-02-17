@@ -1,2 +1,0 @@
-import './trelloHandler';
-import './graphHandler';
