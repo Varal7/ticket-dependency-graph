@@ -1,6 +1,7 @@
 # Ticket Dependency Graph
 
-**This repository is no longer maintained. Most recent code is available at [Theodo's repo](https://github.com/theodo/ticket-dependency-graph).**
+**This repository is no longer maintained.  
+Most recent code is available at [Theodo's repo](https://github.com/theodo/ticket-dependency-graph).**
 
 Use this tool with Trello to visualize the dependencies between your tickets
 
